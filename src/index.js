@@ -1,5 +1,5 @@
 // Core Engine Factory
-export { createVertex } from './createVertex.js';
+export { createEngine } from './createEngine.js';
 
 // Controller Definition Wrapper
 export { defineController } from './createController.js';
