@@ -9,10 +9,10 @@ export default defineConfig({
         format: 'es',
         outDir: 'dist',
         lib: {
-            entry: resolve(import.meta.dirname, 'main.js'),
-            name: "Vertex",
+            entry: resolve(import.meta.dirname, 'src/index.js'),
+            name: "VertexEngine",
             type: "module",
-            filename: "vertex",
+            filename: "vertex_engine",
             formats: ['es'], // Ensure it is an ES module format
         },
         sourcemap: true,
