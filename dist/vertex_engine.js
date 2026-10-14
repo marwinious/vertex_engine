@@ -43,20 +43,21 @@ function createLogger({ level = "info", enabled = true } = {}) {
 	function format(namespace, msg) {
 		return `[Vertex:${namespace}] ${msg}`;
 	}
-	return function getScopedLogger(namespace, overrideLevel) {
+	return function getScopedLogger(namespace, overrideLevel, overrideEnabled) {
 		const currentLevel = overrideLevel && overrideLevel in levels ? levels[overrideLevel] : defaultLevel;
+		const isLoggingEnabled = typeof overrideEnabled === "boolean" ? overrideEnabled : enabled;
 		return {
 			debug(msg, ...args) {
-				if (enabled && currentLevel <= levels.debug) console.debug(format(namespace, msg), ...args);
+				if (isLoggingEnabled && currentLevel <= levels.debug) console.debug(format(namespace, msg), ...args);
 			},
 			info(msg, ...args) {
-				if (enabled && currentLevel <= levels.info) console.log(format(namespace, msg), ...args);
+				if (isLoggingEnabled && currentLevel <= levels.info) console.log(format(namespace, msg), ...args);
 			},
 			warn(msg, ...args) {
-				if (enabled && currentLevel <= levels.warn) console.warn(format(namespace, msg), ...args);
+				if (isLoggingEnabled && currentLevel <= levels.warn) console.warn(format(namespace, msg), ...args);
 			},
 			error(msg, ...args) {
-				if (enabled && currentLevel <= levels.error) console.error(format(namespace, msg), ...args);
+				if (isLoggingEnabled && currentLevel <= levels.error) console.error(format(namespace, msg), ...args);
 			}
 		};
 	};
@@ -95,7 +96,7 @@ function createEngine({ stateStore, logLevel = "info", logEnabled = true }) {
 /**
 Creates a new controller from factory method.
 */
-function defineController({ name, setup, logLevel = "info" }) {
+function defineController({ name, setup, logLevel = "info", logEnabled = true }) {
 	return function controllerFactory({ stateStore, eventBus, getLogger }) {
 		return {
 			name,
@@ -112,7 +113,7 @@ function defineController({ name, setup, logLevel = "info" }) {
 				},
 				globalState: stateStore,
 				events: eventBus,
-				logger: getLogger(name, logLevel)
+				logger: getLogger(name, logLevel, logEnabled)
 			})
 		};
 	};
