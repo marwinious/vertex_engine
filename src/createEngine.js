@@ -1,12 +1,12 @@
 import { createEventBus } from "./utils/createEventBus.js"
 import { createLogger } from "./utils/createLogger.js"
 
-export function createEngine({ stateStore, logLevel = "info" }) {
+export function createEngine({ stateStore, logLevel = "info", logEnabled = true }) {
     const controllers = new Map()
 
     // Shared engine utilities
     const eventBus = createEventBus()
-    const getLogger = createLogger({ level: logLevel })
+    const getLogger = createLogger({ level: logLevel, enabled: logEnabled })
 
     function register(controllerDefinition) {
         // Inject stateStore + eventBus + logger factory
