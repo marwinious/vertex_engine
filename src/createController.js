@@ -1,11 +1,11 @@
 /**
     Creates a new controller from factory method.
 */
-export function defineController({ name, setup, logLevel = 'info' }) {
+export function defineController({ name, setup, logLevel = 'info', logEnabled=true }) {
     // Factory wrapper now accepts shared utilities from Vertex
     return function controllerFactory({ stateStore, eventBus, getLogger }) {
         // Create namespace-scoped logger automatically for this controller
-        const logger = getLogger(name, logLevel)
+        const logger = getLogger(name, logLevel, logEnabled)
 
         const context = {
             // Scoped Radius state helper

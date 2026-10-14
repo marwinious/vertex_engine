@@ -12,30 +12,36 @@ export function createLogger({ level = "info", enabled = true } = {}) {
         return `[Vertex:${namespace}] ${msg}`
     }
 
-    return function getScopedLogger(namespace, overrideLevel) {
-        // Resolve current level using controller override if present, otherwise default level
+    return function getScopedLogger(namespace, overrideLevel, overrideEnabled) {
+        // Resolve level: prefer controller override if valid, otherwise use engine default
         const currentLevel = (overrideLevel && overrideLevel in levels) 
             ? levels[overrideLevel] 
-            : defaultLevel
+            : defaultLevel;
+
+        // Resolve enabled status: use controller-level override if explicitly passed (boolean), 
+        // otherwise fall back to global engine enabled setting
+        const isLoggingEnabled = typeof overrideEnabled === 'boolean' 
+            ? overrideEnabled 
+            : enabled;
 
         return {
             debug(msg, ...args) {
-                if (enabled && currentLevel <= levels.debug) {
+                if (isLoggingEnabled && currentLevel <= levels.debug) {
                     console.debug(format(namespace, msg), ...args)
                 }
             },
             info(msg, ...args) {
-                if (enabled && currentLevel <= levels.info) {
+                if (isLoggingEnabled && currentLevel <= levels.info) {
                     console.log(format(namespace, msg), ...args)
                 }
             },
             warn(msg, ...args) {
-                if (enabled && currentLevel <= levels.warn) {
+                if (isLoggingEnabled && currentLevel <= levels.warn) {
                     console.warn(format(namespace, msg), ...args)
                 }
             },
             error(msg, ...args) {
-                if (enabled && currentLevel <= levels.error) {
+                if (isLoggingEnabled && currentLevel <= levels.error) {
                     console.error(format(namespace, msg), ...args)
                 }
             },
