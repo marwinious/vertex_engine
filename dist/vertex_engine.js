@@ -63,10 +63,13 @@ function createLogger({ level = "info", enabled = true } = {}) {
 }
 //#endregion
 //#region src/createEngine.js
-function createEngine({ stateStore, logLevel = "info" }) {
+function createEngine({ stateStore, logLevel = "info", logEnabled = true }) {
 	const controllers = /* @__PURE__ */ new Map();
 	const eventBus = createEventBus();
-	const getLogger = createLogger({ level: logLevel });
+	const getLogger = createLogger({
+		level: logLevel,
+		enabled: logEnabled
+	});
 	function register(controllerDefinition) {
 		const instance = controllerDefinition({
 			stateStore,
@@ -94,7 +97,6 @@ Creates a new controller from factory method.
 */
 function defineController({ name, setup, logLevel = "info" }) {
 	return function controllerFactory({ stateStore, eventBus, getLogger }) {
-		console.log("logLevel: ", name, logLevel);
 		return {
 			name,
 			actions: setup({
