@@ -12,7 +12,12 @@ export function createLogger({ level = "info", enabled = true } = {}) {
         return `[Vertex:${namespace}] ${msg}`
     }
 
-    return function getScopedLogger(namespace) {
+    return function getScopedLogger(namespace, overrideLevel) {
+        // Resolve current level using controller override if present, otherwise default level
+        const currentLevel = (overrideLevel && overrideLevel in levels) 
+            ? levels[overrideLevel] 
+            : defaultLevel
+
         return {
             debug(msg, ...args) {
                 if (enabled && currentLevel <= levels.debug) {
@@ -21,7 +26,7 @@ export function createLogger({ level = "info", enabled = true } = {}) {
             },
             info(msg, ...args) {
                 if (enabled && currentLevel <= levels.info) {
-                    console.info(format(namespace, msg), ...args)
+                    console.log(format(namespace, msg), ...args)
                 }
             },
             warn(msg, ...args) {
