@@ -39,7 +39,7 @@ function createLogger({ level = "info", enabled = true } = {}) {
 		warn: 2,
 		error: 3
 	};
-	levels[level];
+	const defaultLevel = levels[level] ?? 1;
 	function format(namespace, msg) {
 		return `[Vertex:${namespace}] ${msg}`;
 	}
