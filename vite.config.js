@@ -15,10 +15,10 @@ export default defineConfig({
             filename: "vertex_engine",
             formats: ['es'], // Ensure it is an ES module format
         },
-        sourcemap: true,
+        sourcemap: false,
         target: 'esnext',
-        // minify: true,
-        minify: 'terser', // Enable minification using Terser (default minifier)
+        minify: false,
+        // minify: 'terser', // Enable minification using Terser (default minifier)
         terserOptions: {
             format: {
                 max_line_len: 0,      // Removes line breaks / collapses to a single line
