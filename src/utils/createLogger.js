@@ -6,7 +6,7 @@
 */
 export function createLogger({ level = "info", enabled = true } = {}) {
     const levels = { debug: 0, info: 1, warn: 2, error: 3 }
-    const currentLevel = levels[level] ?? 1
+    const defaultLevel = levels[level] ?? 1;
 
     function format(namespace, msg) {
         return `[Vertex:${namespace}] ${msg}`
