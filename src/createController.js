@@ -3,7 +3,7 @@
 */
 export function defineController({ name, setup, logLevel = 'info', logEnabled=true }) {
     // Factory wrapper now accepts shared utilities from Vertex
-    return function controllerFactory({ stateStore, eventBus, getLogger }) {
+    return function controllerFactory({ stateStore, eventBus, getLogger, http }) {
         // Create namespace-scoped logger automatically for this controller
         const logger = getLogger(name, logLevel, logEnabled)
 
@@ -30,6 +30,7 @@ export function defineController({ name, setup, logLevel = 'info', logEnabled=tr
             // Injected Utilities
             events: eventBus,
             logger: logger,
+            http: http, // Injected db_http instance
         }
 
         const actions = setup(context)
