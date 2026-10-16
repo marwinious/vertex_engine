@@ -329,6 +329,12 @@ __metadata:
   languageName: node
   linkType: hard
 
+"db_http@portal:../db_http::locator=vertex_engine%40workspace%3A.":
+  version: 0.0.0-use.local
+  resolution: "db_http@portal:../db_http::locator=vertex_engine%40workspace%3A."
+  languageName: node
+  linkType: soft
+
 "detect-libc@npm:^2.0.3":
   version: 2.1.2
   resolution: "detect-libc@npm:2.1.2"
@@ -856,6 +862,7 @@ __metadata:
   resolution: "vertex_engine@workspace:."
   dependencies:
     "@vitest/ui": "npm:^5.0.4"
+    db_http: "portal:../db_http"
     terser: "npm:^5.51.2"
     vite: "npm:^8.3.4"
     vitest: "npm:^5.0.4"

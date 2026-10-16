@@ -21,6 +21,9 @@
         "test": "vitest",
         "testui": "vitest --ui"
     },
+    "dependencies": {
+        "db_http": "portal:../db_http"
+    },
     "devDependencies": {
         "@vitest/ui": "^5.0.4",
         "terser": "^5.51.2",
