@@ -97,6 +97,47 @@ describe("Vertex Engine Core", () => {
         })
     })
 
+    describe("Late-Bound State Injection (setStateStore)", () => {
+        it("should throw an informative error if state is accessed before setStateStore is called", () => {
+            const unattachedEngine = createEngine()
+            const userController = defineController({
+                name: "user",
+                setup({ state }) {
+                    return {
+                        getName: () => state.get().name,
+                    }
+                },
+            })
+
+            unattachedEngine.register(userController)
+            const actions = unattachedEngine.getActions("user")
+
+            expect(() => actions.getName()).toThrow(
+                '[Vertex:user] State store has not been initialized on Vertex. Call engine.setStateStore(store) first.',
+            )
+        })
+
+        it("should seamlessly connect state when setStateStore is invoked after registration", () => {
+            const standaloneEngine = createEngine()
+            const userController = defineController({
+                name: "user",
+                setup({ state }) {
+                    return {
+                        getName: () => state.get().name,
+                    }
+                },
+            })
+
+            standaloneEngine.register(userController)
+            const actions = standaloneEngine.getActions("user")
+
+            // Late attach state store
+            standaloneEngine.setStateStore(store)
+
+            expect(actions.getName()).toBe("Darius")
+        })
+    })
+
     describe("Internal Event Bus Integration", () => {
         it("should publish and receive events between controllers via the context bus", () => {
             const listenerSpy = vi.fn()
@@ -132,7 +173,7 @@ describe("Vertex Engine Core", () => {
     describe("Scoped Logger Integration", () => {
         it("should inject a namespace-prefixed logger into controller setup", () => {
             const consoleSpy = vi
-                .spyOn(console, "info")
+                .spyOn(console, "log")
                 .mockImplementation(() => {})
 
             const verboseEngine = createEngine({
@@ -157,6 +198,53 @@ describe("Vertex Engine Core", () => {
             )
 
             consoleSpy.mockRestore()
+        })
+
+        it("should honor controller-level logEnabled overrides", () => {
+            const consoleSpy = vi
+                .spyOn(console, "log")
+                .mockImplementation(() => {})
+
+            const verboseEngine = createEngine({
+                stateStore: store,
+                logLevel: "info",
+                logEnabled: true,
+            })
+
+            const silencedController = defineController({
+                name: "silenced",
+                logEnabled: false,
+                setup({ logger }) {
+                    return {
+                        doSomething: () => logger.info("Should not appear"),
+                    }
+                },
+            })
+
+            verboseEngine.register(silencedController)
+            verboseEngine.getActions("silenced").doSomething()
+
+            expect(consoleSpy).not.toHaveBeenCalled()
+
+            consoleSpy.mockRestore()
+        })
+    })
+
+    describe("HTTP Helper Integration", () => {
+        it("should expose the HTTP client instance to controller context", () => {
+            const httpController = defineController({
+                name: "apiTest",
+                setup({ http }) {
+                    return {
+                        hasHttp: () => Boolean(http && typeof http.sendRequest === "function"),
+                    }
+                },
+            })
+
+            engine.register(httpController)
+            const actions = engine.getActions("apiTest")
+
+            expect(actions.hasHttp()).toBe(true)
         })
     })
 })
