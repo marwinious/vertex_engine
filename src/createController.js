@@ -1,15 +1,20 @@
 /**
     Creates a new controller from factory method.
 */
-export function defineController({ name, setup, logLevel = 'info', logEnabled=true }) {
-    // Factory wrapper now accepts shared utilities from Vertex
-    return function controllerFactory({ stateStore, eventBus, getLogger, http }) {
-        // Create namespace-scoped logger automatically for this controller
-        const logger = getLogger(name, logLevel, logEnabled)
+export function defineController({ name, setup, logLevel, logEnabled }) {
+    return function controllerFactory({ 
+        stateStore, 
+        eventBus, 
+        getLogger, 
+        http,
+        getScopedState,
+        globalStateProxy
+    }) {
+        const logger = getLogger(name, logLevel, logEnabled);
 
         const context = {
-            // Scoped Radius state helper
-            state: {
+            // Lazy-evaluated state scoped to this controller name
+            state: getScopedState ? getScopedState(name) : {
                 get: () => stateStore.getState(name),
                 set: (value, runListeners) => {
                     if (typeof value === "function") {
@@ -19,25 +24,23 @@ export function defineController({ name, setup, logLevel = 'info', logEnabled=tr
                                 [name]: value(prev[name]),
                             }),
                             runListeners,
-                        )
+                        );
                     } else {
-                        stateStore.setState({ [name]: value }, runListeners)
+                        stateStore.setState({ [name]: value }, runListeners);
                     }
                 },
             },
-            globalState: stateStore,
-
-            // Injected Utilities
+            globalState: globalStateProxy || stateStore,
             events: eventBus,
             logger: logger,
-            http: http, // Injected db_http instance
-        }
+            http: http,
+        };
 
-        const actions = setup(context)
+        const actions = setup(context);
 
         return {
             name,
             actions,
-        }
-    }
+        };
+    };
 }
