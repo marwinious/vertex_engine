@@ -202,7 +202,8 @@ function createHttpClient(defaultConfig = {}) {
 }
 //#endregion
 //#region src/createEngine.js
-function createEngine({ stateStore, logLevel = "info", logEnabled = true, httpConfig = null, httpClient = null } = {}) {
+function createEngine({ stateStore = null, logLevel = "info", logEnabled = true, httpConfig = null, httpClient = null } = {}) {
+	let currentStateStore = stateStore;
 	const controllers = /* @__PURE__ */ new Map();
 	const eventBus = createEventBus();
 	const getLogger = createLogger({
@@ -212,12 +213,57 @@ function createEngine({ stateStore, logLevel = "info", logEnabled = true, httpCo
 	let http = httpClient;
 	if (!http && httpConfig) http = createHttpClient(httpConfig);
 	else if (!http) http = createHttpClient();
+	/**
+	* Connect or update the Radius state store reference
+	* @param {Object} store - Radius state instance
+	*/
+	function setStateStore(store) {
+		currentStateStore = store;
+	}
+	/**
+	* Creates the lazy state accessor injected into controller setup contexts
+	*/
+	function createScopedState(controllerName) {
+		return {
+			get: () => {
+				if (!currentStateStore) throw new Error(`[Vertex:${controllerName}] State store has not been initialized on Vertex. Call engine.setStateStore(store) first.`);
+				return currentStateStore.getState(controllerName);
+			},
+			set: (value, runListeners) => {
+				if (!currentStateStore) throw new Error(`[Vertex:${controllerName}] State store has not been initialized on Vertex. Call engine.setStateStore(store) first.`);
+				if (typeof value === "function") currentStateStore.setState((prev) => ({
+					...prev,
+					[controllerName]: value(prev[controllerName])
+				}), runListeners);
+				else currentStateStore.setState({ [controllerName]: value }, runListeners);
+			}
+		};
+	}
+	/**
+	* Lazy global state accessor for cross-controller state reads
+	*/
+	const globalStateProxy = {
+		getState: (key) => {
+			if (!currentStateStore) throw new Error("[Vertex] State store has not been initialized on Vertex. Call engine.setStateStore(store) first.");
+			return currentStateStore.getState(key);
+		},
+		setState: (...args) => {
+			if (!currentStateStore) throw new Error("[Vertex] State store has not been initialized on Vertex. Call engine.setStateStore(store) first.");
+			return currentStateStore.setState(...args);
+		},
+		watch: (...args) => {
+			if (!currentStateStore) throw new Error("[Vertex] State store has not been initialized on Vertex. Call engine.setStateStore(store) first.");
+			return currentStateStore.watch(...args);
+		}
+	};
 	function register(controllerDefinition) {
 		const instance = controllerDefinition({
-			stateStore,
+			stateStore: currentStateStore,
 			eventBus,
 			getLogger,
-			http
+			http,
+			getScopedState: createScopedState,
+			globalStateProxy
 		});
 		controllers.set(instance.name, instance);
 		return instance;
@@ -228,6 +274,7 @@ function createEngine({ stateStore, logLevel = "info", logEnabled = true, httpCo
 		return controller.actions;
 	}
 	return {
+		setStateStore,
 		register,
 		getActions,
 		events: eventBus,
@@ -239,12 +286,13 @@ function createEngine({ stateStore, logLevel = "info", logEnabled = true, httpCo
 /**
 Creates a new controller from factory method.
 */
-function defineController({ name, setup, logLevel = "info", logEnabled = true }) {
-	return function controllerFactory({ stateStore, eventBus, getLogger, http }) {
+function defineController({ name, setup, logLevel, logEnabled }) {
+	return function controllerFactory({ stateStore, eventBus, getLogger, http, getScopedState, globalStateProxy }) {
+		const logger = getLogger(name, logLevel, logEnabled);
 		return {
 			name,
 			actions: setup({
-				state: {
+				state: getScopedState ? getScopedState(name) : {
 					get: () => stateStore.getState(name),
 					set: (value, runListeners) => {
 						if (typeof value === "function") stateStore.setState((prev) => ({
@@ -254,9 +302,9 @@ function defineController({ name, setup, logLevel = "info", logEnabled = true })
 						else stateStore.setState({ [name]: value }, runListeners);
 					}
 				},
-				globalState: stateStore,
+				globalState: globalStateProxy || stateStore,
 				events: eventBus,
-				logger: getLogger(name, logLevel, logEnabled),
+				logger,
 				http
 			})
 		};
