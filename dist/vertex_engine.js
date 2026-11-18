@@ -103,8 +103,8 @@ function createHttpClient(defaultConfig = {}) {
 	*/
 	async function request(endpoint, options = {}) {
 		const method = (options.method || state.method).toUpperCase();
-		const fullUrl = `${state.baseUrl}${endpoint}`;
 		let requestConfig = {
+			url: `${state.baseUrl}${endpoint}`,
 			method,
 			headers: {
 				...state.headers,
@@ -120,8 +120,9 @@ function createHttpClient(defaultConfig = {}) {
 		const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 		requestConfig.signal = controller.signal;
 		for (const interceptor of state.interceptors.request) requestConfig = await interceptor(requestConfig) || requestConfig;
+		const { url, ...fetchOptions } = requestConfig;
 		try {
-			let response = await fetch(fullUrl, requestConfig);
+			let response = await fetch(url, fetchOptions);
 			clearTimeout(timeoutId);
 			for (const interceptor of state.interceptors.response) response = await interceptor(response) || response;
 			if (!response.ok) {
@@ -138,6 +139,12 @@ function createHttpClient(defaultConfig = {}) {
 			if (error.name === "AbortError") throw new Error(`Request timed out after ${timeoutMs}ms`);
 			throw error;
 		}
+	}
+	function createProxyInterceptor(proxyUrl) {
+		return (config) => ({
+			...config,
+			url: `${proxyUrl}${encodeURIComponent(config.url)}`
+		});
 	}
 	return {
 		sendRequest: request,
@@ -197,6 +204,7 @@ function createHttpClient(defaultConfig = {}) {
 			state.interceptors.response.push(fn);
 			return this;
 		},
+		createProxyInterceptor,
 		buildQueryString
 	};
 }
