@@ -22,7 +22,7 @@
         "testui": "vitest --ui"
     },
     "dependencies": {
-        "db_http": "portal:../db_http"
+        "db_http": "github:marwinious/db_http#v1.0.1"
     },
     "devDependencies": {
         "@vitest/ui": "^5.0.4",
