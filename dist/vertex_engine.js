@@ -63,7 +63,7 @@ function createLogger({ level = "info", enabled = true } = {}) {
 	};
 }
 //#endregion
-//#region ../db_http/dist/db_http.js
+//#region node_modules/db_http/dist/db_http.js
 /**
 * Creates an HTTP client instance with encapsulated state and configuration.
 * @param {Object} defaultConfig - Initial settings (headers, timeout, base URL, etc.)

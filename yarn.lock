@@ -329,11 +329,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"db_http@portal:../db_http::locator=vertex_engine%40workspace%3A.":
-  version: 0.0.0-use.local
-  resolution: "db_http@portal:../db_http::locator=vertex_engine%40workspace%3A."
+"db_http@github:marwinious/db_http#v1.0.1":
+  version: 0.0.0
+  resolution: "db_http@https://github.com/marwinious/db_http.git#commit=57152685f1046fb73a1b92839ec6ca4a4a1eeb7f"
+  checksum: 10c0/998425690dc7e6ed90f49a19c4a2db4fd3c5a99802159fbb8268d68aa3342cf35cfb85ce9297abe1bfac738ffe37c9ed04c8a1f7decee445c93b7a0628184c77
   languageName: node
-  linkType: soft
+  linkType: hard
 
 "detect-libc@npm:^2.0.3":
   version: 2.1.2
@@ -862,7 +863,7 @@ __metadata:
   resolution: "vertex_engine@workspace:."
   dependencies:
     "@vitest/ui": "npm:^5.0.4"
-    db_http: "portal:../db_http"
+    db_http: "github:marwinious/db_http#v1.0.1"
     terser: "npm:^5.51.2"
     vite: "npm:^8.3.4"
     vitest: "npm:^5.0.4"
